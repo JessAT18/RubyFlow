@@ -1,14 +1,12 @@
-﻿using ApiProductor.Models;
-using Azure.Messaging.ServiceBus;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ApiProductor.Controllers
+﻿namespace ApiProductor.Controllers
 {
+    using ApiProductor.Models;
+    using Azure.Messaging.ServiceBus;
+    using Microsoft.AspNetCore.Mvc;
+    using Newtonsoft.Json;
+    using System;
+    using System.Threading.Tasks;
+
     [Route("api/[controller]")]
     [ApiController]
     public class DataController : ControllerBase
@@ -17,14 +15,15 @@ namespace ApiProductor.Controllers
         public async Task<bool> EnviarAsync([FromBody] Data data)
         {
             string connectionString = "Endpoint=sb://queuejess.servicebus.windows.net/;SharedAccessKeyName=Enviar;SharedAccessKey=f+vpkehAxR16QvfnSxZXy3g2Hif+dnNpX3CUtSrVd2g=;EntityPath=cola1";
-            string queueName = "queuejess/cola1";
+            string queueName = "cola1";
+            string mensaje = JsonConvert.SerializeObject(data);
             await using (ServiceBusClient client = new ServiceBusClient(connectionString))
             {
                 // create a sender for the queue 
                 ServiceBusSender sender = client.CreateSender(queueName);
 
                 // create a message that we can send
-                ServiceBusMessage message = new ServiceBusMessage("Hello world!");
+                ServiceBusMessage message = new ServiceBusMessage(mensaje);
 
                 // send the message
                 await sender.SendMessageAsync(message);
