@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sensors/sensors.dart';
+
 void main() => runApp(MiApp());
 //Primer widget inmutable statelessW
 class MiApp extends StatelessWidget {
@@ -25,6 +27,10 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
+
+  List<StreamSubscription<dynamic>> _streamSubscriptions =
+    <StreamSubscription<dynamic>>[];
+
   Future<String> sendData() async{
       var response = await http.post(
       Uri.https('apiproductorjess.azurewebsites.net', '/api/data'),
@@ -32,13 +38,27 @@ class _InicioState extends State<Inicio> {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        "NameDevice":"Prueba Acelerometro",
-        "EventDate":"2021-03-11T21:09:00",
+        "NameDevice":"Acelerometro",
+        "EventDate":DateTime.now().toIso8601String(),
         "Event":"Evento Dart y CosmosDB"
       })
     );
+    print(response);
     return response.body;
   }
+
+  @override
+  void initState() {
+    super.initState();
+    _streamSubscriptions
+        .add(accelerometerEvents.listen((AccelerometerEvent event) {
+      setState(() {
+        sendData();
+        print("Desde el acelerometro");
+      });
+    }));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
